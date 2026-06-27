@@ -96,7 +96,7 @@ int main(void)
   9a:	8a b9       	out	0x0a, r24	; 10
     while (1)
     {
-		for(int i=0;i<4;i++)
+		for(int i=0;i<5;i++)
   9c:	80 e0       	ldi	r24, 0x00	; 0
   9e:	90 e0       	ldi	r25, 0x00	; 0
   a0:	0f c0       	rjmp	.+30     	; 0xc0 <main+0x2a>
@@ -127,9 +127,9 @@ int main(void)
     DDRD |= (1<<GREEN_LED)|(1<<RED_LED)|(1<<BLUE_LED)|(1<<YELLOW_LED)|(1<<WHITE_LED);
     while (1)
     {
-		for(int i=0;i<4;i++)
+		for(int i=0;i<5;i++)
   be:	01 96       	adiw	r24, 0x01	; 1
-  c0:	84 30       	cpi	r24, 0x04	; 4
+  c0:	85 30       	cpi	r24, 0x05	; 5
   c2:	91 05       	cpc	r25, r1
   c4:	74 f3       	brlt	.-36     	; 0xa2 <main+0xc>
   c6:	ea cf       	rjmp	.-44     	; 0x9c <main+0x6>

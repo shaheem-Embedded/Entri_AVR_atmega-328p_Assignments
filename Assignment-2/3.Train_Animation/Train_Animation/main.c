@@ -25,13 +25,13 @@ uint8_t train[]=
 	};
 int main(void)
 {
-    DDRD |= (1<<GREEN_LED)|(1<<RED_LED)|(1<<BLUE_LED)|(1<<YELLOW_LED)|(1<<WHITE_LED);
+    DDRD |= (1<<GREEN_LED)|(1<<RED_LED)|(1<<BLUE_LED)|(1<<YELLOW_LED)|(1<<WHITE_LED); //Set PORTD pins as ouput pins.
     while (1)
     {
-		for(int i=0;i<4;i++)
+		for(int i=0;i<5;i++)
 		{
 			PORTD = train[i];
-			_delay_ms(500);
+			_delay_ms(500);  //implemented delay for LED transition.
     }
 }
 }

@@ -1,5 +1,5 @@
 /*
- * LED_Blinking_timer1.c
+ * LED_Blinking_timer1.c(Using Timer 1 compare match interrupt)
  *
  * Created: 28-Jun-26 7:06:15 PM
  * Author : SHAHEEM
@@ -10,27 +10,25 @@
 #define GREEN_LED PORTB0
 #define ORANGE_LED PORTB1
 #define RED_LED PORTB2
-
+volatile uint8_t compare_match_count;
 int main(void)
 {
-PORTB |= (1<<PORTB0|1<<PORTB1|1<<1<<PORTB2);  //Set PORTB as Output ports.
-
+PORTB |= (1<<GREEN_LED|1<<ORANGE_LED|1<RED_LED);  //Set PORTB as Output ports.
 timer_1_enable();
+PORTB |= (1<<GREEN_LED); //Turn GREEN_LED ON.
+PORTB &= ~(1<<ORANGE_LED); //Turn ORANGE_LED OFF.
+PORTB &= ~(1<<RED_LED); //Turn RED_LED OFF.
 /*---------------------------------------------------------------------------------------------------
-	 pre-scalar value 64  /Calculation. [Methode 1]
+	 pre-scalar value 1024  /Calculation. [Methode 1]
 	 T=1/f, 1 clock periode is 1/16mhz = 62.5ns.
-	 Tick time = 62.5 ns × 64.
-	 = 4 microseconds.(1 counter increment = 4 µs)
-	 [total time delay required =0.5sec = 500,000 microsecond]
-	        Total count required =500,000/4 =125,000.
+	 Tick time = 62.5 ns × 1024.
+	 = 4 microseconds.(1 counter increment = 64 µs)
+	 [total time delay required =10sec = 10,000,000 microsecond]
+	        Total count required =10,000,000/64x10^-3 =156250.
 		-->Total count of a 16 bit counter is 65535 counts,
-		 .
-		. .	The total count for 0.5 sec is 	  65535 & (125,000-65535);
-	 (as in execution wait for TCNT1- 1 Overflow i.e 65535 and reload TCNT1 for 59464 counts.
-	 so for 59464 counts, you need to preload TCNT1 with value =(65536?59464) 6072. And repeat the process for continuous operation)
+
+	 (as in execution load OCR1AH & OCR1AL with 156250 and copmare woth TCNT1 value,use interrupt service routine for compare match interrupt)
 //-------------------------------------------------------------------------------------------------- */
-
-
     while (1)
     {
 		
@@ -38,3 +36,25 @@ timer_1_enable();
     }
 }
 
+ISR(TIMER1_COMPA_vect) 
+{
+	compare_match_count ++; //Increase the count every time a compare match occurs,
+	
+	if(compare_match_count >=10)
+	{
+		PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED After 10sec;
+		PORTB |= (1<<ORANGE_LED);//Turn ON ORANGE_LED;
+		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
+	}
+	if(compare_match_count >=13)
+	{
+		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED After 3sec;
+		PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED;
+		PORTB |= (1<<PORTB);//Turn OFF GREEN LED After 10sec;
+	}
+	PORTB |= (1<<RED_LED); //Turn RED_LED ON.
+	if(compare_match_count >=10)
+	{
+		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED After 10sec;
+	}
+}

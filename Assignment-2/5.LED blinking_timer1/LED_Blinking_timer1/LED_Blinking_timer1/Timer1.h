@@ -8,8 +8,8 @@
 
 #ifndef TIMER1_H_
 #define TIMER1_H_
-
-timer1_init();
+//Initialize timer1 for time delay
+void timer1_init();
 
 
 

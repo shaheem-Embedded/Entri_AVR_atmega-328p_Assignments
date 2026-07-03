@@ -6,6 +6,8 @@
  */
 #define F_CPU 16000000UL
 #include <avr/io.h>
+#include <avr/interrupt.h>
+#include "Timer1.h"
 
 #define GREEN_LED PORTB0
 #define ORANGE_LED PORTB1
@@ -13,8 +15,10 @@
 volatile uint8_t compare_match_count;
 int main(void)
 {
-PORTB |= (1<<GREEN_LED|1<<ORANGE_LED|1<RED_LED);  //Set PORTB as Output ports.
-timer_1_enable();
+DDRB |= (1<<GREEN_LED)|(1<<ORANGE_LED)|(1<<RED_LED);  // Enable all port pins as outputs
+PORTB &= ~((1<<GREEN_LED)|(1<<ORANGE_LED)|(1<<RED_LED)); // Turn all LEDs OFF initially
+timer1_init();
+
 PORTB |= (1<<GREEN_LED); //Turn GREEN_LED ON.
 PORTB &= ~(1<<ORANGE_LED); //Turn ORANGE_LED OFF.
 PORTB &= ~(1<<RED_LED); //Turn RED_LED OFF.
@@ -31,8 +35,7 @@ PORTB &= ~(1<<RED_LED); //Turn RED_LED OFF.
 //-------------------------------------------------------------------------------------------------- */
     while (1)
     {
-		
-		
+		// All logic handled in ISR
     }
 }
 
@@ -40,21 +43,31 @@ ISR(TIMER1_COMPA_vect)
 {
 	compare_match_count ++; //Increase the count every time a compare match occurs,
 	
-	if(compare_match_count >=10)
+	if(compare_match_count ==10)
 	{
 		PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED After 10sec;
 		PORTB |= (1<<ORANGE_LED);//Turn ON ORANGE_LED;
 		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
 	}
-	if(compare_match_count >=13)
+	else if(compare_match_count ==13)
 	{
-		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED After 3sec;
+		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED After 13sec;
 		PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED;
-		PORTB |= (1<<PORTB);//Turn OFF GREEN LED After 10sec;
+		PORTB |= (1<<RED_LED);//Turn ON RED_LED After 13sec;
 	}
-	PORTB |= (1<<RED_LED); //Turn RED_LED ON.
-	if(compare_match_count >=10)
+	if(compare_match_count ==23)
 	{
-		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED After 10sec;
+		compare_match_count = 0;
+		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED;
+		PORTB |= (1<<GREEN_LED);//Turn ON GREEN LED;
+		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED After 23sec;
 	}
+/*	else
+	{
+		// Reset — restart cycle
+		compare_match_count = 0;
+		PORTB |=  (1<<GREEN_LED);
+		PORTB &= ~(1<<ORANGE_LED);
+		PORTB &= ~(1<<RED_LED);
+	}*/
 }

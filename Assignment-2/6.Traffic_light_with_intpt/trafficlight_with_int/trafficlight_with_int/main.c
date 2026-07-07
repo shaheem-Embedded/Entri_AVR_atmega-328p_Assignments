@@ -61,37 +61,42 @@ ISR(TIMER1_COMPA_vect)
 	compare_match_count ++; //Increase the count every time a compare match occurs,
 	if(flag==0)
 	{
-	if(compare_match_count ==10)
+	if(compare_match_count >=10)
 	{ 
 			PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED After 10sec;
 			PORTB |= (1<<ORANGE_LED);//Turn ON ORANGE_LED;
-			PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
-		
+			PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;	
 	}
-	else if(compare_match_count ==13)
+	else if(compare_match_count >=13)
 	{
 			PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED After 13sec;
 			PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED;
 			PORTB |= (1<<RED_LED);//Turn ON RED_LED After 13sec;
 	}
-	else if(compare_match_count ==23)
+	else if(compare_match_count >=23)
 	{
 			compare_match_count = 0;
 			PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED;
 			PORTB |= (1<<GREEN_LED);//Turn ON GREEN LED;
 			PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED After 23sec;
 	}
+	}
 else if(flag==1)
 {
-	compare_match_count = 0;
-	if(compare_match_count ==7)
+	// Emergency — show GREEN for 7 seconds then resume normal
+	PORTB |=  (1<<GREEN_LED);
+	PORTB &= ~(1<<ORANGE_LED);
+	PORTB &= ~(1<<RED_LED);
+
+	
+	if(compare_match_count >=7)
 	{
 		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED;
 		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
 		PORTB |= (1<<GREEN_LED);//Turn ON GREEN LED;
 	}
 }
-}
+
 }
 
 ISR(INT0_vect)

@@ -4,6 +4,11 @@
  * Created: 05-Jul-26 1:40:53 PM
  * Author : SHAHEEM
  */
+#define F_CPU 16000000UL
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include "Timer_1.h"
+#include "INT_0.h"
 
 #define GREEN_LED PORTB0
 #define ORANGE_LED PORTB1
@@ -12,6 +17,11 @@
 volatile uint8_t compare_match_count;
 volatile uint8_t flag = 0;
 
+void GREEN_LED_ON(void);
+void ORANGE_LED_ON(void);
+void RED_LED_ON(void);
+
+//Implement Finite state machine logic
 typedef enum
 {
 	STATE_GREEN,
@@ -20,9 +30,8 @@ typedef enum
 	STATE_EMERGENCY,
 }Trafficstate_t;
 
-volatile Trafficstate_t Current_state =STATE_GREEN;
-	
-	
+volatile Trafficstate_t current_state =STATE_GREEN;
+
 int main()
 {
 DDRB |= (1<<GREEN_LED)|(1<<ORANGE_LED)|(1<<RED_LED);  // Enable all port pins as outputs
@@ -32,114 +41,102 @@ PORTD |= (1<<EMERGENCY_BUTTON); //Enable internal pull-up for Button (PIN is in 
 
 timer1_init(); //initialize Timer1;
 interrupt_init(); //Initialize External interrupt;
-
-PORTB |= (1<<GREEN_LED); //Turn GREEN_LED ON.
-PORTB &= ~(1<<ORANGE_LED); //Turn ORANGE_LED OFF.
-PORTB &= ~(1<<RED_LED); //Turn RED_LED OFF.
+//START GREEN_STATE
+GREEN_LED_ON();
 
     while (1)
     {
-	compare_match_count++;
-	switch (Current_state)
+	switch (current_state)      
 	{
-	case STATE_GREEN:
-	if(compare_match_count >= 10)
+	case STATE_GREEN:          //STATE GREEN Implemented
+	if(compare_match_count >= 10) //Even if Flag =1, Safe limit will be covered before switching to Emergency state
 	{
+		compare_match_count=0;  
 		if(flag==1)
 		{
-			Current_state = STATE_EMERGENCY;
+			GREEN_LED_ON();
+			current_state = STATE_EMERGENCY; 
 		}
 		else
 		{
-		PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED After 10sec;
-		PORTB |= (1<<ORANGE_LED);//Turn ON ORANGE_LED;
-		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
-		compare_match_count=0;
+		ORANGE_LED_ON();
+		current_state = STATE_ORANGE;
 		}
 	}
 	break;
 	
-	 case STATE_ORANGE:
-	 if(compare_match_count >= 3)
+	 case STATE_ORANGE:    //STATE_ORANGE Implemented
+	 if(compare_match_count >= 3) //Even if Flag =1, Safe limit will be covered before switching to Emergency state
 	 {
+		 compare_match_count=0;
 		 if(flag==1)
 		 {
-			 Current_state = STATE_EMERGENCY;
+			 GREEN_LED_ON();
+			 current_state = STATE_EMERGENCY;
 		 }
 		 else
 		 {
-			 PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED After 3sec;
-			 PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED;
-			 PORTB |=  (1<<RED_LED);//Turn ON RED_LED;
-			 compare_match_count=0;
+			 RED_LED_ON();
+			 current_state = STATE_RED;
 		 }
+	 }
 	 break;
 	 
-	case STATE_RED:
-	if(compare_match_count >= 10)
+	case STATE_RED:         //STATE_RED Implemented
+	if(compare_match_count >= 10) //Even if Flag =1, Safe limit will be covered before switching to Emergency state
 	{
-		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED;
-		PORTB |= (1<<GREEN_LED);//Turn ON GREEN LED;
-		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED After 10 sec;
 		compare_match_count=0;
+		if(flag==1)
+		{
+			 GREEN_LED_ON();
+			 current_state = STATE_EMERGENCY;
+		}
+		else
+		{
+			GREEN_LED_ON();
+			current_state = STATE_GREEN;
+		}
 	}
 	break;
 	
-	case STATE_EMERGENCY:
-	if(compare_match_count >= 25)
+	case STATE_EMERGENCY:   //STATE EMERGENCY Implemented
+	if(compare_match_count >= 8) //Additional 25 sec of Time delay implemented for EMERGENCY STATE.
 	{
-		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED;
-		PORTB |= (1<<GREEN_LED);//Turn ON GREEN LED;
-		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
 		compare_match_count=0;
 		flag=0;
+		GREEN_LED_ON();
+        current_state = STATE_GREEN;
 	}
 	break;
 	}
 }
-
+}
 ISR(TIMER1_COMPA_vect) 
 {
-	compare_match_count ++;//Increase the count every time a compare match occurs,
-/*	compare_match_count ++; //Increase the count every time a compare match occurs,
-	if(flag==0)
-	{
-	if(compare_match_count ==10)
-	{ 
-			PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED After 10sec;
-			PORTB |= (1<<ORANGE_LED);//Turn ON ORANGE_LED;
-			PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;	
-	}
-	else if(compare_match_count ==13)
-	{
-			PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED After 13sec;
-			PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED;
-			PORTB |=  (1<<RED_LED);//Turn ON RED_LED After 13sec;
-	}
-	else if(compare_match_count ==23)
-	{
-			compare_match_count = 0;
-			PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED;
-			PORTB |= (1<<GREEN_LED);//Turn ON GREEN LED;
-			PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED After 23sec;
-	}
-	}
-else if(flag==1)
-{
-	// Emergency — show GREEN for 7 seconds then resume normal
-	
-	if(compare_match_count ==7)
-	{
-		flag=0;
-		compare_match_count=0;
-		PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED;
-		PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
-		PORTB |= (1<<GREEN_LED);//Turn ON GREEN LED;
-	}
-}*/
+	compare_match_count ++;  // Increment the Count based on Timer capture
 }
 
 ISR(INT0_vect)
 {
-	flag=1;// Set emergency flag — state change handled in Timer ISR;
+	flag=1;  // Set emergency flag — state change handled in Timer ISR;
+}
+
+void GREEN_LED_ON(void)
+{
+	PORTB |= (1<<GREEN_LED); //Turn GREEN_LED ON.
+	PORTB &= ~(1<<ORANGE_LED); //Turn ORANGE_LED OFF.
+	PORTB &= ~(1<<RED_LED); //Turn RED_LED OFF.
+}
+
+void ORANGE_LED_ON(void) 
+{
+	PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED After 10sec;
+	PORTB |= (1<<ORANGE_LED);//Turn ON ORANGE_LED;
+	PORTB &= ~(1<<RED_LED);//Turn OFF RED_LED;
+}
+void RED_LED_ON(void)
+{
+	PORTB &= ~(1<<ORANGE_LED);//Turn OFF ORANGE_LED After 13sec;
+	PORTB &= ~(1<<GREEN_LED);//Turn OFF GREEN LED;
+	PORTB |=  (1<<RED_LED);//Turn ON RED_LED After 13sec;
 }

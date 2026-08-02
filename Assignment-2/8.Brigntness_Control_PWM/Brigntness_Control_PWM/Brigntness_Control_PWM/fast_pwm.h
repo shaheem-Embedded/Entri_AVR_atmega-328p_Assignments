@@ -11,6 +11,6 @@
 
 
 void init_timer0_PWM();
-void set_duty_cycle();
+void set_duty_cycle(uint8_t level);
 
 #endif /* FAST_PWM_H_ */

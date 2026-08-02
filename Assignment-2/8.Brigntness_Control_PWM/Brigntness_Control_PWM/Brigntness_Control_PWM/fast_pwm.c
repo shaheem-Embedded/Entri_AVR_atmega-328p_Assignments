@@ -37,7 +37,7 @@ void init_timer0_PWM()
 	Frequency of PWM Wave signal at OC0A Pin calculation:
 	PWM frequency = fclk/N(510)  
 	              = 16x10^6/(64x510)
-				  = 490hz.(Suitable for LED)  / N-prescalar value;
+				  = 490hz.(Suitable for LED)/ N-prescalar value;
 				  -----------------------------------------------------------------------------
 				    25%  ? OCR0A = (25  × 255)/100 = 64
 				    50%  ? OCR0A = (50  × 255)/100 = 128
@@ -47,4 +47,30 @@ void init_timer0_PWM()
   // OCR0A = 128;         //Value to be loaded IN OCR0x for phase correct PWM signal with 50% duty cycle.
   
 
+}
+
+void set_duty_cycle(uint8_t level)
+{
+	switch (level)
+	{
+		case 1:
+		OCR0A = 64;   //25% brightness
+		break;
+		
+		case 2:
+		OCR0A = 128;  //50% brightness
+		break;
+		
+		case 3:
+		OCR0A = 191; //75% brightness
+        break;
+		
+		case 4: 
+		OCR0A = 255;  //100% brightness
+		break;
+		
+		default:
+		OCR0A = 0;  //OFF
+		break;
+	}
 }

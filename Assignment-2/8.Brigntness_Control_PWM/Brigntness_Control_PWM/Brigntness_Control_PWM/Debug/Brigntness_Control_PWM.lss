@@ -148,22 +148,22 @@ void set_duty_cycle(uint8_t level)
   d4:	0c c0       	rjmp	.+24     	; 0xee <set_duty_cycle+0x2e>
 	{
 		case 1:
-		OCR0A = 64;   //25% brightness
-  d6:	80 e4       	ldi	r24, 0x40	; 64
+		OCR0A = 32;   //25% brightness
+  d6:	80 e2       	ldi	r24, 0x20	; 32
   d8:	87 bd       	out	0x27, r24	; 39
 		break;
   da:	08 95       	ret
 		
 		case 2:
-		OCR0A = 128;  //50% brightness
-  dc:	80 e8       	ldi	r24, 0x80	; 128
+		OCR0A = 75;  //50% brightness
+  dc:	8b e4       	ldi	r24, 0x4B	; 75
   de:	87 bd       	out	0x27, r24	; 39
 		break;
   e0:	08 95       	ret
 		
 		case 3:
-		OCR0A = 191; //75% brightness
-  e2:	8f eb       	ldi	r24, 0xBF	; 191
+		OCR0A = 150; //75% brightness
+  e2:	86 e9       	ldi	r24, 0x96	; 150
   e4:	87 bd       	out	0x27, r24	; 39
         break;
   e6:	08 95       	ret

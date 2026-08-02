@@ -54,15 +54,15 @@ void set_duty_cycle(uint8_t level)
 	switch (level)
 	{
 		case 1:
-		OCR0A = 64;   //25% brightness
+		OCR0A = 32;   //25% brightness
 		break;
 		
 		case 2:
-		OCR0A = 128;  //50% brightness
+		OCR0A = 75;  //50% brightness
 		break;
 		
 		case 3:
-		OCR0A = 191; //75% brightness
+		OCR0A = 150; //75% brightness
         break;
 		
 		case 4: 
